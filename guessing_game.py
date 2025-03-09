@@ -16,5 +16,5 @@ guess = int(input("Enter your guess (1-100_:"))
 # Check if the guess is correct
 if guess == secret_number:
     print("Congrats! You guessed the correct number!")
-  Else:
+Else:
     print("Wrong guess! Try again next time.")
