@@ -20,7 +20,7 @@ elif guess > secret_number:
     print("⬇️ Lower! Try again.")  # Hint if guess is too high
 else:
     print(f"🎉 Congrats! You guessed the number {secret_number} in {attempts} attempts! You must be a genius! 🤯")
-        break  # Exit loop when the correct number is guessed
+    break  # Exit loop when the correct number is guessed
 
 # Ask the player for a guess
 guess = int(input("Enter your guess (1-100:"))
