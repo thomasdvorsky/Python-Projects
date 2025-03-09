@@ -7,25 +7,39 @@ career_input = input("Tell me about your career situation, goals, and what you w
 
 print("\n📌 Analyzing your career path...\n")
 
-# Extract salary (looks for "$80K", "$120,000", etc.)
-salary_match = re.search(r"\$(\d+[,.]?\d*)", career_input)
-salary = salary_match.group(1) if salary_match else "Unknown"
+# Extract salary (handles different formats: "$80K", "$75,000 per year", etc.)
+salary_match = re.search(r"\$?(\d+[,.]?\d*)\s?(k|K|per year|annually)?", career_input)
+if salary_match:
+    raw_salary = salary_match.group(1)
+    if salary_match.group(2) and "k" in salary_match.group(2).lower():
+        salary = f"${raw_salary}K"  # Convert "80 k" to "$80K"
+    else:
+        salary = f"${raw_salary}"  # For standard formats
+else:
+    salary = "Unknown"
 
-# Extract job title (detects variations like "I am an operations analyst at a bank")
-role_match = re.search(r"I am (a|an) ([\w\s-]+) (for|at) ([\w\s-]+)", career_input, re.IGNORECASE)
-role = role_match.group(2) if role_match else "Unknown Role"
-industry = role_match.group(4) if role_match else "Unknown Industry"
+# Extract job title and industry (handles "I am a ___ for a ___" and "I work as a ___ in ___")
+role_match = re.search(r"I (am|work as) (a|an) ([\w\s-]+?) (for|at|in) ([\w\s-]+)", career_input, re.IGNORECASE)
+role = role_match.group(3).strip() if role_match else "Unknown Role"
+industry = role_match.group(5).strip() if role_match else "Unknown Industry"
 
-# Extract certifications (allows any format like "POPM SAFe certification, Tableau Desktop Specialist, etc.")
-certs_match = re.findall(r"([A-Za-z0-9\s-]+certification|certified\s[A-Za-z0-9\s-]+)", career_input, re.IGNORECASE)
-certifications = ", ".join(certs_match) if certs_match else "None listed"
+# Refine industry (convert raw input like "a bank doing operational work" → "Banking")
+industry = re.sub(r"\b(a|the|doing|working in|sector|field|work)\b", "", industry, flags=re.IGNORECASE).strip()
+if industry.lower() in ["bank", "banking", "finance"]:
+    industry = "Banking"
+elif industry.lower() in ["tech", "technology", "software"]:
+    industry = "Technology"
 
-# Extract career goal (looks for "I want to...")
-goal_match = re.search(r"I want to (.*?)(\.|$)", career_input, re.IGNORECASE)
-goal = goal_match.group(1) if goal_match else "Unknown goal"
+# Extract certifications (pulls only proper cert names, ignoring filler words)
+certs_match = re.findall(r"\b([\w\s-]+certification|certified\s[\w\s-]+)\b", career_input, re.IGNORECASE)
+certifications = ", ".join([cert.strip() for cert in certs_match]) if certs_match else "None listed"
+
+# Extract career goal (ensures structured phrasing without "of some sorts" or "soon")
+goal_match = re.search(r"I want to (.*?)($|\.|\ssoon)", career_input, re.IGNORECASE)
+goal = goal_match.group(1).strip() if goal_match else "Unknown goal"
 
 # Print extracted details
-print(f"💰 Current Salary: ${salary}")
+print(f"💰 Current Salary: {salary}")
 print(f"👨‍💼 Current Role: {role}")
 print(f"🏢 Industry: {industry}")
 print(f"🎓 Certifications: {certifications}")
